@@ -11,34 +11,58 @@ public class BookService {
   BookRepository bookRepository;
 
     public void setCommend(String commendLine) {
-        String [] commandAndAutorAndBook=commendLine.split(" ");
-//find command
         String command = null;
-        if (commandAndAutorAndBook[0]!=null)
-         command=commandAndAutorAndBook[0];
-        else return;
-     Book book =new Book();
+        if(commendLine.equals(null) ||commendLine.replace(" ", "").equals(""))
+        {
+            System.out.println("please write command and parameter");
+            return;
+        }
+//find command
+        String [] commandAndAutorAndBook=commendLine.split(" ");
+        for (String s: commandAndAutorAndBook) {
+            if (!s.equals("")) {
+                command=s;
+                break;
+            }
+        }
+
+
+        Book book =new Book();
         switch (command){
             case "add":{
-                book.setAutor(commendLine.replace(command,"").split("\"")[0]);
-                book.setBook_name(commendLine.split("\"")[1].replace("\"",""));
-
-                bookRepository.save(book);
-                break;
+                int s=commendLine.split("\"").length;
+                if (commendLine.contains("\"") && commendLine.split("\"").length>1 && !commendLine.split("\"")[1].replace(" ", "").equals(""))
+                {
+                    book.setBook_name(commendLine.split("\"")[1].replace("\"", ""));
+                    if (!commendLine.split("\"")[1].replace("\"", "").replace(" ","").replace(command,"").equals("")){
+                        book.setAutor(commendLine.split("\"")[1].replace("\"", "").replace(" ","").replace(command,""));
+                  bookRepository.save(book);
+                    }
+                    else
+                        System.out.println("you don't wrote book autor");
+            }
+            else
+                    System.out.println("you don't wrote book name");
+            break;
             }
                case "remove":{
                    if (commendLine.contains("\""))
                        book.setBook_name(commendLine.split("\"")[1].replace("\"",""));
                    List books = bookRepository.getBooksByName(book.getBook_name());
-                   if(!books.isEmpty() && books.size()<1) {
+                   if(!books.isEmpty() && books.size()>1) {
                        System.out.println("We found " + books.size() + " books");
                        books.forEach(System.out::println);
-                       System.out.print("please choose which book to delete:");
+                       System.out.print("please write position book which to delete:");
                        Scanner scanner= new Scanner(System.in);
                        int eletentPosition=scanner.nextInt();
-                       book= (Book) books.get(eletentPosition+1);
+                       book= (Book) books.get(eletentPosition-1);
                    }
                    else
+                   if(books.isEmpty())
+                   {
+                       System.out.println("you write wrong name, please reply");
+                       break;
+                   }
                        book= (Book) books.get(0);
                    bookRepository.delete(book);
                 break;
@@ -48,20 +72,30 @@ public class BookService {
                 String newAutor = null;
                 if (commendLine.contains("\"")) {
                     book.setBook_name(commendLine.split("\"")[1]);
-                    if(commendLine.split("\"")[2]!=" ")
-                        newAutor=commendLine.split("\"")[2];
-                   newbookName=commendLine.split("\"")[3];
+                    if(commendLine.split("\"").length>1 && !commendLine.split("\"")[2].replace(" ","").equals(""))
+                        newAutor=commendLine.split("\"")[2].replace(" ", "");
+                    if(commendLine.split("\"").length>2 && !commendLine.split("\"")[3].replace(" ", "").equals(""))
+                        newbookName=commendLine.split("\"")[3];
+                        else
+                            {
+                                System.out.println("you write wrong new name, please reply");
+                                break;
+                            }
                 }
                 else break;
                 List books = bookRepository.getBooksByName(book.getBook_name());
-                if(books.isEmpty()) break;
+                if(books.isEmpty())
+                {
+                    System.out.println("you write wrong old name, please reply");
+                    break;
+                }
                 if(books.size()>1){
-                    System.out.println("We found " + books.size() + " books");
+                    System.out.println("We found: " + books.size() + " books");
                     books.forEach(System.out::println);
-                    System.out.print("please choose which book to update:");
+                    System.out.print("please write position book which to edit:");
                     Scanner scanner= new Scanner(System.in);
-                    int eletentPosition=scanner.nextInt();
-                    book= (Book) books.get(eletentPosition-1);
+                    int elementPosition=scanner.nextInt();
+                    book= (Book) books.get(elementPosition-1);
                 }
                 else
                     book= (Book) books.get(0);
@@ -79,10 +113,12 @@ public class BookService {
                 break;
             }
             case "show":{
-                if (commendLine.contains("\""))
+                if (commendLine.contains("\"")&&commendLine.split("\"").length>1 && !commendLine.split("\"")[1].replace(" ", "").equals(""))
                     book.setBook_name(commendLine.split("\"")[1].replace("\"",""));
 
                 List books=bookRepository.getBooksByName(book.getBook_name());
+                if(books.isEmpty())
+                    System.out.println("Database don't book with this name");
                 books.forEach(System.out::println);
                 break;
             }

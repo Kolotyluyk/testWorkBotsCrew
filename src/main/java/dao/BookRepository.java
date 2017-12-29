@@ -15,20 +15,18 @@ public class BookRepository {
     SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
     Session session = sessionFactory.openSession();
         Transaction t=session.beginTransaction();
-           book.setId((int)session.save(book));
+           book.setId((Long) session.save(book));
         t.commit();
-         session.close();
-       // HibernateUtil.shutdown();
+        System.out.println("add book:v"+book);
 }
 
     public List<Book> delete(Book book) {
        Session session = HibernateUtil.getSessionFactory().openSession();
         Transaction transaction = session.getTransaction();
         transaction.begin();
-        //Delete a persistent object
-         if(book!=null){
+          if(book!=null){
             session.delete(book);
-            System.out.println("Book is deleted");
+            System.out.println("Book is deleted:" +book);
         }
         transaction.commit();
 
@@ -41,7 +39,7 @@ public class BookRepository {
         transaction.begin();
      if(book!=null){
             session.update(book);
-            System.out.println("Book is updated");
+            System.out.println("Book is edit to"+ book);
         }
         transaction.commit();
 
@@ -65,8 +63,11 @@ public class BookRepository {
             e.printStackTrace();
             if (transaction != null) {
                 transaction.rollback();
+
             }
+
         }
+
 
         return books;
     }
@@ -77,11 +78,9 @@ public class BookRepository {
         SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-
        List<Book> list=(List<Book>) session.createQuery("from "+Book.class.getName()).list();
-
         session.getTransaction().commit();
-        session.close();
+        list.forEach(System.out::println);
       return list;
     }
 }
